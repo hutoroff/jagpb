@@ -2,6 +2,7 @@ package ru.hutoroff.jagpb.bot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -11,6 +12,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.IOException;
 import java.io.InputStream;
 
+@Component("pollingBot")
 public class PollingBot extends TelegramLongPollingBot {
     private static final Logger LOG = LoggerFactory.getLogger(PollingBot.class);
     private static final String CONFIG_FILE_NAME = "pollingBotConfig.private.yml";
