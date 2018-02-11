@@ -3,13 +3,14 @@ package ru.hutoroff.jagpb.data.model;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Id;
 import org.mongodb.morphia.annotations.Property;
+import ru.hutoroff.jagpb.data.mongo.dao.MongoDocument;
 
-public class BaseMongoDO {
+public class BaseMongoDO implements MongoDocument {
     @Id
-    @Property("id")
+    @Property(F_ID)
     private ObjectId id;
 
-    @Property("version")
+    @Property(F_VERSION)
     private Long version;
 
     public ObjectId getId() {
