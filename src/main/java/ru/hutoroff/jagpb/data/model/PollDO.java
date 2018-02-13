@@ -1,5 +1,6 @@
 package ru.hutoroff.jagpb.data.model;
 
+import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Entity;
 import org.mongodb.morphia.annotations.Property;
 import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
@@ -14,7 +15,7 @@ public class PollDO extends BaseMongoDO implements PollDocument {
     @Property(F_AUTHOR)
     private Integer authorId;
 
-    @Property(F_OPTIONS)
+    @Embedded
     private List<PollOption> options;
 
     public String getTitle() {

@@ -1,11 +1,16 @@
 package ru.hutoroff.jagpb.data.model;
 
 import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Property;
+import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
 
 import java.util.List;
 
-public class PollOption {
+@Embedded
+public class PollOption implements PollDocument {
+    @Property(F_OPTION_TITLE)
     private String title;
+
     @Embedded
     private List<Voter> voters;
 

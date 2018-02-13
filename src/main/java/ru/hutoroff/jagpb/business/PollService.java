@@ -20,6 +20,7 @@ public class PollService {
 
     public void createPoll(String title, Integer authorId) {
         PollDO newPoll = new PollDO();
+
         newPoll.setAuthorId(authorId);
         newPoll.setTitle(title);
 

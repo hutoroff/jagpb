@@ -1,22 +1,54 @@
 package ru.hutoroff.jagpb.data.model;
 
-public class Voter {
-    private String id;
-    private String name;
+import org.mongodb.morphia.annotations.Embedded;
+import org.mongodb.morphia.annotations.Property;
+import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
 
-    public String getId() {
-        return id;
+import java.util.Date;
+
+@Embedded
+public class Voter implements PollDocument {
+    @Property(F_OPTION_VOTER_DATE)
+    private Date date;
+
+    @Property(F_OPTION_VOTER_USERNAME)
+    private String username;
+
+    @Property(F_OPTION_VOTER_FIRSTNAME)
+    private String firstName;
+
+    @Property(F_OPTION_VOTER_SECONDNAME)
+    private String secondName;
+
+    public Date getDate() {
+        return date;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
-    public String getName() {
-        return name;
+    public String getUsername() {
+        return username;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getSecondName() {
+        return secondName;
+    }
+
+    public void setSecondName(String secondName) {
+        this.secondName = secondName;
     }
 }

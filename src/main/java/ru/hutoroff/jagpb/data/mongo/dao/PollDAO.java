@@ -7,35 +7,33 @@ import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import ru.hutoroff.jagpb.data.model.PollDO;
 import ru.hutoroff.jagpb.data.model.PollOption;
 import ru.hutoroff.jagpb.data.mongo.exceptions.DaoException;
 
 import java.util.List;
 
-@Service
+@Repository
 public class PollDAO extends BasicDAO<PollDO, ObjectId> implements PollDocument {
-    private final Datastore datastore;
 
     @Autowired
-    public PollDAO(Datastore ds, Datastore datastore) {
+    public PollDAO(Datastore ds) {
         super(ds);
-        this.datastore = datastore;
     }
 
     public List<PollDO> getPollsCreatedBy(String authorId) {
-        Query<PollDO> authorQuery = datastore.createQuery(PollDO.class)
+        Query<PollDO> authorQuery = getDatastore().createQuery(PollDO.class)
                 .field(F_AUTHOR).equal(authorId);
         return authorQuery.asList();
     }
 
     public boolean addOptionToPoll(ObjectId pollId, PollOption option) throws DaoException {
-        Query<PollDO> query = datastore.createQuery(PollDO.class)
+        Query<PollDO> query = getDatastore().createQuery(PollDO.class)
                 .field(F_ID).equal(pollId);
-        UpdateOperations<PollDO> ops = datastore.createUpdateOperations(PollDO.class)
+        UpdateOperations<PollDO> ops = getDatastore().createUpdateOperations(PollDO.class)
                 .push(F_OPTIONS, option);
-        UpdateResults update = datastore.update(query, ops);
+        UpdateResults update = getDatastore().update(query, ops);
 
         if (update.getUpdatedCount() != 1) {
             throw new DaoException("No documents was updated");
