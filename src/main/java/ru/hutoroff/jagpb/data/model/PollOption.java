@@ -14,6 +14,10 @@ public class PollOption implements PollDocument {
     @Embedded
     private List<Voter> voters;
 
+    public PollOption(String title) {
+        this.title = title;
+    }
+
     public String getTitle() {
         return title;
     }

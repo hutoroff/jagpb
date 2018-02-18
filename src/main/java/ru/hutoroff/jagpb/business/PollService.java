@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.hutoroff.jagpb.data.model.PollDO;
+import ru.hutoroff.jagpb.data.model.PollOption;
 import ru.hutoroff.jagpb.data.mongo.dao.PollDAO;
+
+import java.util.List;
 
 @Service
 public class PollService {
@@ -18,11 +21,12 @@ public class PollService {
         this.pollDAO = pollDAO;
     }
 
-    public void createPoll(String title, Integer authorId) {
+    public void createPoll(String title, List<PollOption> options, Integer authorId) {
         PollDO newPoll = new PollDO();
 
         newPoll.setAuthorId(authorId);
         newPoll.setTitle(title);
+        newPoll.setOptions(options);
 
         pollDAO.save(newPoll);
     }

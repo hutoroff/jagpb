@@ -1,19 +1,23 @@
 package ru.hutoroff.jagpb.bot.commands;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.Options;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
+import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
 public abstract class Command {
+    protected final static Options options = new Options();
+    
     private final CommandType type;
     private final CommandLine arguments;
 
-    public Command(CommandType type, String[] arguments) throws ParseException {
+    public Command(CommandType type, String[] arguments) throws UnknownOptionsException {
         this.type = type;
         this.arguments = initArguments(arguments);
     }
 
-    public Command(String rawCommand) throws ParseException, UnknownCommandException {
+
+    public Command(String rawCommand) throws UnknownCommandException, UnknownOptionsException {
         String[] split = rawCommand.split(" ");
         this.type = initType(split);
 
@@ -24,10 +28,8 @@ public abstract class Command {
         }
     }
 
-    protected abstract CommandLine initArguments(String[] split) throws ParseException;
-
-    private CommandType initType(String[] split) throws UnknownCommandException {
-        return CommandType.getByCommand(split[0]);
+    public static Options getOptions() {
+        return options;
     }
 
     public CommandType getType() {
@@ -36,5 +38,13 @@ public abstract class Command {
 
     public CommandLine getArguments() {
         return arguments;
+    }
+
+    protected abstract CommandLine initArguments(String[] split) throws UnknownOptionsException;
+
+    public abstract String getHelp();
+
+    private CommandType initType(String[] split) throws UnknownCommandException {
+        return CommandType.getByCommand(split[0]);
     }
 }

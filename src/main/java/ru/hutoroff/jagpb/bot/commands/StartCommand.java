@@ -1,16 +1,21 @@
 package ru.hutoroff.jagpb.bot.commands;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.ParseException;
+import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
 public class StartCommand extends Command {
 
-	public StartCommand(CommandType type, String[] arguments) throws ParseException {
+	public StartCommand(CommandType type, String[] arguments) throws UnknownOptionsException {
 		super(type, arguments);
 	}
 
 	@Override
-	protected CommandLine initArguments(String[] split) throws ParseException {
+	public String getHelp() {
+		return "Call this command on chat init";
+	}
+
+	@Override
+	protected CommandLine initArguments(String[] split) throws UnknownOptionsException {
 		return null;
 	}
 }

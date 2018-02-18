@@ -1,6 +1,6 @@
 package ru.hutoroff.jagpb.bot;
 
-import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,15 @@ import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
+import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.business.PollService;
+import ru.hutoroff.jagpb.data.model.PollOption;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component("pollingBot")
 public class PollingBot extends TelegramLongPollingBot {
@@ -58,9 +63,9 @@ public class PollingBot extends TelegramLongPollingBot {
             LOG.warn("Unknown command: ", e);
             doSimpleReply(message.getChatId(), "Command is not supported");
             return;
-        } catch (ParseException e) {
+        } catch (UnknownOptionsException e) {
             LOG.warn("Wrong arguments: ", e);
-            doSimpleReply(message.getChatId(), "Incorrect arguments. Check help");
+            doSimpleReply(message.getChatId(), e.getMessage());
             return;
         }
 
@@ -71,11 +76,19 @@ public class PollingBot extends TelegramLongPollingBot {
         final Integer authorId = message.getFrom().getId();
 
         switch (command.getType()) {
+            case START:
+                doSimpleReply(message.getChatId(), "Welcome to " + configuration.getName() + "!");
+                return;
             case CREATE_POLL:
-                String title = String.join(" ", command.getArguments().getOptionValues("t"));
-                pollService.createPoll(title, authorId);
+                final String pollTitle = String.join(" ", command.getArguments().getOptionValues("t"));
+                final String[] options = command.getArguments().getOptionValues("o");
+                final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
+
+                pollService.createPoll(pollTitle, pollOptions, authorId);
                 doSimpleReply(message.getChatId(), "Poll created");
                 return;
+            default:
+                doSimpleReply(message.getChatId(), "No activity prepared for this command yet");
         }
 
     }
