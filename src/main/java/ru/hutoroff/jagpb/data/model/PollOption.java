@@ -1,5 +1,6 @@
 package ru.hutoroff.jagpb.data.model;
 
+import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Property;
 import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
@@ -8,11 +9,19 @@ import java.util.List;
 
 @Embedded
 public class PollOption implements PollDocument {
+
+    @Property(F_OPTION_ID)
+    private String id;
+
     @Property(F_OPTION_TITLE)
     private String title;
 
     @Embedded
     private List<Voter> voters;
+
+    public PollOption() {
+        this.id = new ObjectId().toString();
+    }
 
     public PollOption(String title) {
         this.title = title;
@@ -32,5 +41,9 @@ public class PollOption implements PollDocument {
 
     public void setVoters(List<Voter> voters) {
         this.voters = voters;
+    }
+
+    public String getId() {
+        return id;
     }
 }

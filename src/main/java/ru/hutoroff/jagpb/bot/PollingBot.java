@@ -15,7 +15,9 @@ import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
+import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
 import ru.hutoroff.jagpb.business.PollService;
+import ru.hutoroff.jagpb.data.model.PollDO;
 import ru.hutoroff.jagpb.data.model.PollOption;
 
 import java.io.IOException;
@@ -83,9 +85,10 @@ public class PollingBot extends TelegramLongPollingBot {
                 final String pollTitle = String.join(" ", command.getArguments().getOptionValues("t"));
                 final String[] options = command.getArguments().getOptionValues("o");
                 final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
+                PollDO poll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId);
+                SendMessage sendMessage = PollInfoBuilder.buildPollMessage(poll, message.getChatId());
 
-                pollService.createPoll(pollTitle, pollOptions, authorId);
-                doSimpleReply(message.getChatId(), "Poll created");
+                sendReply(sendMessage);
                 return;
             default:
                 doSimpleReply(message.getChatId(), "No activity prepared for this command yet");
@@ -112,9 +115,12 @@ public class PollingBot extends TelegramLongPollingBot {
 
     private void doSimpleReply(Long chatId, String replyText) {
         SendMessage reply = new SendMessage(chatId, replyText);
+        this.sendReply(reply);
+    }
 
+    private void sendReply(SendMessage msg) {
         try {
-            execute(reply);
+            execute(msg);
         } catch (TelegramApiException e) {
             LOG.error("Error on sending reply:", e);
         }
