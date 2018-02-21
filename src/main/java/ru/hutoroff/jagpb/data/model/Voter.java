@@ -5,9 +5,13 @@ import org.mongodb.morphia.annotations.Property;
 import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
 
 import java.util.Date;
+import java.util.Objects;
 
 @Embedded
 public class Voter implements PollDocument {
+    @Property(F_OPTION_VOTER_ID)
+    private Integer id;
+
     @Property(F_OPTION_VOTER_DATE)
     private Date date;
 
@@ -17,8 +21,20 @@ public class Voter implements PollDocument {
     @Property(F_OPTION_VOTER_FIRSTNAME)
     private String firstName;
 
-    @Property(F_OPTION_VOTER_SECONDNAME)
-    private String secondName;
+    @Property(F_OPTION_VOTER_LASTNAME)
+    private String lastName;
+
+    public Voter() {
+        this.date = new Date();
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public Date getDate() {
         return date;
@@ -44,11 +60,24 @@ public class Voter implements PollDocument {
         this.firstName = firstName;
     }
 
-    public String getSecondName() {
-        return secondName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public void setSecondName(String secondName) {
-        this.secondName = secondName;
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Voter)) return false;
+        Voter voter = (Voter) o;
+        return Objects.equals(getId(), voter.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

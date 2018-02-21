@@ -1,11 +1,12 @@
 package ru.hutoroff.jagpb.data.model;
 
-import org.bson.types.ObjectId;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.mongodb.morphia.annotations.Embedded;
 import org.mongodb.morphia.annotations.Property;
 import ru.hutoroff.jagpb.data.mongo.dao.PollDocument;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Embedded
 public class PollOption implements PollDocument {
@@ -17,13 +18,15 @@ public class PollOption implements PollDocument {
     private String title;
 
     @Embedded
-    private List<Voter> voters;
+    private Set<Voter> voters;
 
     public PollOption() {
-        this.id = new ObjectId().toString();
+        this.id = RandomStringUtils.random(8);
+        this.voters = new HashSet<>();
     }
 
     public PollOption(String title) {
+        this.id = RandomStringUtils.random(8);
         this.title = title;
     }
 
@@ -35,11 +38,11 @@ public class PollOption implements PollDocument {
         this.title = title;
     }
 
-    public List<Voter> getVoters() {
+    public Set<Voter> getVoters() {
         return voters;
     }
 
-    public void setVoters(List<Voter> voters) {
+    public void setVoters(Set<Voter> voters) {
         this.voters = voters;
     }
 

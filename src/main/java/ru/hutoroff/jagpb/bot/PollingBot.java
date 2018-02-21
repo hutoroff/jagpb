@@ -1,11 +1,13 @@
 package ru.hutoroff.jagpb.bot;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -52,6 +54,27 @@ public class PollingBot extends TelegramLongPollingBot {
                 processCommand(update.getMessage());
             } else {
                 doSimpleReply(update.getMessage().getChatId(), "Only commands can be processed");
+            }
+        } else if (update.hasCallbackQuery()) {
+            String callbackData = update.getCallbackQuery().getData();
+            String[] split = callbackData.split("_");
+            if(split.length != 3 && !split[0].equals("vote")) {
+                LOG.error("Attempt to preform unknown callback action: {}", callbackData);
+                return;
+            }
+            ObjectId pollId = new ObjectId(String.valueOf(split[1]));
+            pollService.vote(pollId, split[2], update.getCallbackQuery().getFrom());
+
+            PollDO poll = pollService.getPoll(pollId);
+            EditMessageText editMessageText = new EditMessageText()
+                    .setChatId(update.getCallbackQuery().getMessage().getChatId())
+                    .setMessageId(update.getCallbackQuery().getMessage().getMessageId())
+                    .setText(PollInfoBuilder.prepareText(poll));
+            editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
+            try {
+                execute(editMessageText);
+            } catch (TelegramApiException e) {
+                LOG.error("Error on update message with poll result: ", e);
             }
         }
     }
