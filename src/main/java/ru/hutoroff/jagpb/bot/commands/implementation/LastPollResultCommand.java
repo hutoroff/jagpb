@@ -13,7 +13,7 @@ public class LastPollResultCommand extends Command {
 	private static final Options options = new Options();
 	private static final CommandLineParser cliParser = new DefaultParser();
 	private static final String HELP;
-	private static final String COMMAND_SYNTAX = "/lastPollResult [-c CHAT_ID]";
+	private static final String COMMAND_SYNTAX = "/lastpollresult [-c CHAT_ID]";
 
 	static {
 		options.addOption(Option.builder("c")
