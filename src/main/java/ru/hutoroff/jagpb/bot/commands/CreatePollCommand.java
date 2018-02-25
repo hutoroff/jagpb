@@ -9,6 +9,7 @@ import java.io.StringWriter;
 public class CreatePollCommand extends Command {
     private static final CommandLineParser cliParser = new DefaultParser();
     private static final HelpFormatter helpFormatter = new HelpFormatter();
+    public static final int REQUIRED_OPTIONS_NUMBER = 2;
     private static final String COMMAND_SYNTAX = "/create -t \"Poll Title\" -o {\"option1\",\"option2\",...,\"optionN\"}";
     private static final String HELP;
 
@@ -20,6 +21,7 @@ public class CreatePollCommand extends Command {
                 .argName("TITLE")
                 .desc("title of poll")
                 .numberOfArgs(Option.UNLIMITED_VALUES)
+                .required()
                 .build()
         );
         options.addOption(Option.builder("o")
@@ -30,6 +32,7 @@ public class CreatePollCommand extends Command {
                 .desc("options to be added to poll")
                 .numberOfArgs(Option.UNLIMITED_VALUES)
                 .valueSeparator(',')
+                .required()
                 .build()
         );
 

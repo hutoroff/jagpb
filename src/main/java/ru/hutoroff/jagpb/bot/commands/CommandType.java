@@ -7,7 +7,8 @@ import java.util.Optional;
 
 public enum CommandType {
     START("/start"),
-    CREATE_POLL("/create");
+    CREATE_POLL("/create"),
+    COMMAND_HELP("/commandHelp");
 
     String commandText;
 
@@ -16,7 +17,7 @@ public enum CommandType {
     }
 
     public static CommandType getByCommand(String cmd) throws UnknownCommandException {
-        Optional<CommandType> first = Arrays.stream(values()).filter(el -> el.commandText.equals(cmd)).findFirst();
+        Optional<CommandType> first = Arrays.stream(values()).filter(el -> cmd.startsWith(el.commandText)).findFirst();
         if (first.isPresent()) {
             return first.get();
         }

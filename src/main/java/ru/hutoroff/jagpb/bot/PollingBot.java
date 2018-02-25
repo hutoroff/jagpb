@@ -16,6 +16,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
+import ru.hutoroff.jagpb.bot.commands.CommandHelpCommand;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
@@ -116,10 +117,17 @@ public class PollingBot extends TelegramLongPollingBot {
 
                 sendReply(sendMessage);
                 return;
+            case COMMAND_HELP:
+                printHelpForCommand(message.getChatId(), (CommandHelpCommand)command);
+                return;
             default:
                 doSimpleReply(message.getChatId(), "No activity prepared for this command yet");
         }
 
+    }
+
+    private void printHelpForCommand(long chatId, CommandHelpCommand command) {
+        doSimpleReply(chatId, command.getRequestedHelp());
     }
 
     @Override

@@ -40,11 +40,11 @@ public abstract class Command {
         return arguments;
     }
 
-    protected abstract CommandLine initArguments(String[] split) throws UnknownOptionsException;
-
-    public abstract String getHelp();
-
     private CommandType initType(String[] split) throws UnknownCommandException {
         return CommandType.getByCommand(split[0]);
     }
+
+    public abstract String getHelp();
+
+    protected abstract CommandLine initArguments(String[] split) throws UnknownOptionsException;
 }

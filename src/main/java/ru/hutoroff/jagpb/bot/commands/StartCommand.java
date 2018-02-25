@@ -11,7 +11,7 @@ public class StartCommand extends Command {
 
 	@Override
 	public String getHelp() {
-		return "Call this command on chat init";
+		return Help.START_COMMAND;
 	}
 
 	@Override

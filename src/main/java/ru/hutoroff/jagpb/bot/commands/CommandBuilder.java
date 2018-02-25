@@ -22,7 +22,15 @@ public class CommandBuilder {
 			case START:
 				return new StartCommand(commandType, null);
 			case CREATE_POLL:
+				if (CreatePollCommand.REQUIRED_OPTIONS_NUMBER > (split.length -1)) {
+					return new CommandHelpCommand(split[0]);
+				}
 				return new CreatePollCommand(commandType, Arrays.copyOfRange(split, 1, split.length));
+			case COMMAND_HELP:
+				if (split.length == 1) {
+					return new CommandHelpCommand(split[0]);
+				}
+				return new CommandHelpCommand(split[1]);
 		}
 		throw new IllegalArgumentException("Command '" + command + "' can not be executed");
 	}
@@ -33,8 +41,7 @@ public class CommandBuilder {
 		if (argumentStarts.length > 0) {
 			result.add(command.substring(0, argumentStarts[0] - 1));
 		} else {
-			result.add(command);
-			return result.toArray(new String[0]);
+			return command.split(" ");
 		}
 
 		for (int i = 0; i < argumentStarts.length; i++) {
