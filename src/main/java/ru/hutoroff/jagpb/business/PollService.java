@@ -25,8 +25,8 @@ public class PollService {
         this.pollDAO = pollDAO;
     }
 
-    public PollDO createAndGetBackPoll(String title, List<PollOption> options, Integer authorId) {
-        ObjectId id = this.createPoll(title, options, authorId);
+    public PollDO createAndGetBackPoll(String title, List<PollOption> options, Integer authorId, Long chatId) {
+        ObjectId id = this.createPoll(title, options, authorId, chatId);
         return this.getPoll(id);
     }
 
@@ -60,10 +60,15 @@ public class PollService {
         return true;
     }
 
-    private ObjectId createPoll(String title, List<PollOption> options, Integer authorId) {
+    public PollDO getLastPollForUserInChat(final Integer userId, final Long chatId) {
+        return pollDAO.getLastPollByAuthorInChat(userId, chatId);
+    }
+
+    private ObjectId createPoll(String title, List<PollOption> options, Integer authorId, Long chatId) {
         PollDO newPoll = new PollDO();
 
         newPoll.setAuthorId(authorId);
+        newPoll.setChatId(chatId);
         newPoll.setTitle(title);
         newPoll.setOptions(options);
 

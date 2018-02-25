@@ -6,10 +6,11 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum CommandType {
-    START("/start"),
+    COMMAND_HELP("/commandHelp"),
     CREATE_POLL("/create"),
     HELP("/help"),
-    COMMAND_HELP("/commandHelp");
+    LAST_POLL_RESULT("/lastPollResult"),
+    START("/start");
 
     String commandText;
 

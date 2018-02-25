@@ -12,15 +12,21 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PollInfoBuilder {
 	private static final String BOX_UP_AND_RIGHT = String.valueOf('\u2514');
+	private static final String MALE_SHRUG = EmojiManager.getForAlias("male_shrug").getUnicode();
 
 	private static final String HEADER_FORMAT = EmojiManager.getForAlias("bar_chart").getUnicode() + " %s\n";
 	private static final String OPTION_FORMAT = "\n*%s* - _%d_";
 	private static final String VOTER_FORMAT = "\n\t" + BOX_UP_AND_RIGHT + EmojiManager.getForAlias("bust_in_silhouette").getUnicode() +  " %s%s";
 	private static final String VOTED_N_TOTAL_FORMAT = "\n" + EmojiManager.getForAlias("clipboard").getUnicode() + " %d voted";
 	private static final String VOTED_EMPTY_TOTAL_FORMAT = "\n" + EmojiManager.getForAlias("clipboard").getUnicode() + " nobody voted";
+
+	private static final String REPORT_VOTED_TITLE_FORMAT = "Poll *%s*:\n";
+	private static final String REPORT_VOTED_OPTION_FORMAT = "\n*%s* voted (%d): %s";
+	private static final String REPORT_VOTED_TOTAL_FORMAT = "\n\nTotal voted: %d";
 
 	public static SendMessage buildPollMessage(PollDO poll, Long chatId) {
 		final String text = prepareText(poll);
@@ -70,6 +76,24 @@ public class PollInfoBuilder {
 		} else {
 			sb.append(VOTED_EMPTY_TOTAL_FORMAT);
 		}
+
+		return sb.toString();
+	}
+
+	public static String preparePollingReport(PollDO poll) {
+		if(poll.getOptions() == null || poll.getOptions().size() == 0) {
+			return "No options in poll";
+		}
+
+		StringBuilder sb = new StringBuilder(String.format(REPORT_VOTED_TITLE_FORMAT, poll.getTitle()));
+		int votedCounter = 0;
+		for (PollOption pollOption : poll.getOptions()) {
+			final Set<Voter> voters = pollOption.getVoters() != null ? pollOption.getVoters() : Collections.emptySet();
+			final String votersList = voters.size() == 0 ? MALE_SHRUG : voters.stream().map(Voter::getUsername).collect(Collectors.joining(", "));
+			sb.append(String.format(REPORT_VOTED_OPTION_FORMAT, pollOption.getTitle(), voters.size(), votersList));
+			votedCounter += voters.size();
+		}
+		sb.append(String.format(REPORT_VOTED_TOTAL_FORMAT, votedCounter));
 
 		return sb.toString();
 	}

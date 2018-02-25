@@ -3,6 +3,7 @@ package ru.hutoroff.jagpb.data.mongo.dao;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.dao.BasicDAO;
+import org.mongodb.morphia.query.FindOptions;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
 import org.mongodb.morphia.query.UpdateResults;
@@ -20,6 +21,14 @@ public class PollDAO extends BasicDAO<PollDO, ObjectId> implements PollDocument 
     @Autowired
     public PollDAO(Datastore ds) {
         super(ds);
+    }
+
+    public PollDO getLastPollByAuthorInChat(Integer authorId, Long chatId) {
+        Query<PollDO> query = getDatastore().createQuery(PollDO.class)
+                .field(F_AUTHOR).equal(authorId)
+                .field(F_CHAT).equal(chatId)
+                .order("-" + F_CREATED);
+        return query.get(new FindOptions().limit(1));
     }
 
     public List<PollDO> getPollsCreatedBy(String authorId) {

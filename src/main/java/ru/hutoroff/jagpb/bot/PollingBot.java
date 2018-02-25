@@ -16,7 +16,7 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
-import ru.hutoroff.jagpb.bot.commands.CommandHelpCommand;
+import ru.hutoroff.jagpb.bot.commands.implementation.CommandHelpCommand;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
@@ -102,29 +102,40 @@ public class PollingBot extends TelegramLongPollingBot {
 
     private void executeCommand(Command command, Message message) { //TODO: throw away and write again
         final Integer authorId = message.getFrom().getId();
+        Long chatId = message.getChatId();
 
         switch (command.getType()) {
-            case START:
-                doSimpleReply(message.getChatId(), "Welcome to " + configuration.getName() + "!");
+            case COMMAND_HELP:
+                printHelpForCommand(chatId, (CommandHelpCommand)command);
                 return;
             case CREATE_POLL:
                 final String pollTitle = String.join(" ", command.getArguments().getOptionValues("t"));
                 final String[] options = command.getArguments().getOptionValues("o");
                 final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
-                PollDO poll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId);
-                SendMessage sendMessage = PollInfoBuilder.buildPollMessage(poll, message.getChatId());
+                PollDO createdPoll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId, chatId);
+                SendMessage sendMessage = PollInfoBuilder.buildPollMessage(createdPoll, chatId);
                 sendMessage.setParseMode(ParseMode.MARKDOWN);
 
                 sendReply(sendMessage);
                 return;
-            case COMMAND_HELP:
-                printHelpForCommand(message.getChatId(), (CommandHelpCommand)command);
-                return;
             case HELP:
-                doSimpleReply(message.getChatId(), "To create new poll use command /create");
+                doSimpleReply(chatId, "To create new poll use command /create");
+                return;
+            case LAST_POLL_RESULT:
+                String chatIdCmd = command.getArguments().getOptionValue('c');
+                Long chatIdActual = StringUtils.isNumeric(chatIdCmd.replaceAll("-", "")) ? Long.valueOf(chatIdCmd) : chatId;
+                PollDO pollToReport = pollService.getLastPollForUserInChat(message.getFrom().getId(), chatIdActual);
+                if (pollToReport != null) {
+                    doSimpleReply(chatId, PollInfoBuilder.preparePollingReport(pollToReport));
+                } else {
+                    doSimpleReply(chatId, "No polls from current user in chat");
+                }
+                return;
+            case START:
+                doSimpleReply(chatId, "Welcome to " + configuration.getName() + "!");
                 return;
             default:
-                doSimpleReply(message.getChatId(), "No activity prepared for this command yet");
+                doSimpleReply(chatId, "No activity prepared for this command yet");
         }
 
     }
@@ -152,6 +163,7 @@ public class PollingBot extends TelegramLongPollingBot {
 
     private void doSimpleReply(Long chatId, String replyText) {
         SendMessage reply = new SendMessage(chatId, replyText);
+        reply.setParseMode(ParseMode.MARKDOWN);
         this.sendReply(reply);
     }
 

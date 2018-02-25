@@ -1,6 +1,7 @@
 package ru.hutoroff.jagpb.bot.commands;
 
 import org.springframework.stereotype.Service;
+import ru.hutoroff.jagpb.bot.commands.implementation.*;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
@@ -19,20 +20,26 @@ public class CommandBuilder {
 		CommandType commandType = CommandType.getByCommand(split[0]);
 
 		switch (commandType) {
-			case START:
-				return new StartCommand();
-			case CREATE_POLL:
-				if (CreatePollCommand.REQUIRED_OPTIONS_NUMBER > (split.length -1)) {
-					return new CommandHelpCommand(split[0]);
-				}
-				return new CreatePollCommand(commandType, Arrays.copyOfRange(split, 1, split.length));
 			case COMMAND_HELP:
 				if (split.length == 1) {
 					return new CommandHelpCommand(split[0]);
 				}
 				return new CommandHelpCommand(split[1]);
+			case CREATE_POLL:
+				if (CreatePollCommand.REQUIRED_OPTIONS_NUMBER > (split.length -1)) {
+					return new CommandHelpCommand(split[0]);
+				}
+				return new CreatePollCommand(Arrays.copyOfRange(split, 1, split.length));
 			case HELP:
 				return new HelpCommand();
+			case LAST_POLL_RESULT:
+				if (split.length == 1) {
+					return new LastPollResultCommand(null);
+				} else {
+					return new LastPollResultCommand(Arrays.copyOfRange(split, 1, split.length));
+				}
+			case START:
+				return new StartCommand();
 		}
 		throw new IllegalArgumentException("Command '" + command + "' can not be executed");
 	}
