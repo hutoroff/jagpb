@@ -1,12 +1,10 @@
 package ru.hutoroff.jagpb.bot.commands;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
 public abstract class Command {
-    protected final static Options options = new Options();
     
     private final CommandType type;
     private final CommandLine arguments;
@@ -26,10 +24,6 @@ public abstract class Command {
         } else {
             this.arguments = null;
         }
-    }
-
-    public static Options getOptions() {
-        return options;
     }
 
     public CommandType getType() {

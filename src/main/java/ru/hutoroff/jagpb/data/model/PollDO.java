@@ -16,6 +16,9 @@ public class PollDO extends BaseMongoDO implements PollDocument {
     @Property(F_AUTHOR)
     private Integer authorId;
 
+    @Property(F_CHAT)
+    private Long chatId;
+
     @Property(F_CREATED)
     private Date created;
 
@@ -40,6 +43,14 @@ public class PollDO extends BaseMongoDO implements PollDocument {
 
     public void setAuthorId(Integer authorId) {
         this.authorId = authorId;
+    }
+
+    public Long getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(Long chatId) {
+        this.chatId = chatId;
     }
 
     public Date getCreated() {
