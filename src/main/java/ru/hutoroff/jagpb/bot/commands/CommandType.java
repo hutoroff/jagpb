@@ -8,6 +8,7 @@ import java.util.Optional;
 public enum CommandType {
     START("/start"),
     CREATE_POLL("/create"),
+    HELP("/help"),
     COMMAND_HELP("/commandHelp");
 
     String commandText;

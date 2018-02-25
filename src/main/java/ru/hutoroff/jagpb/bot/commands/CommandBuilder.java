@@ -20,7 +20,7 @@ public class CommandBuilder {
 
 		switch (commandType) {
 			case START:
-				return new StartCommand(commandType, null);
+				return new StartCommand();
 			case CREATE_POLL:
 				if (CreatePollCommand.REQUIRED_OPTIONS_NUMBER > (split.length -1)) {
 					return new CommandHelpCommand(split[0]);
@@ -31,6 +31,8 @@ public class CommandBuilder {
 					return new CommandHelpCommand(split[0]);
 				}
 				return new CommandHelpCommand(split[1]);
+			case HELP:
+				return new HelpCommand();
 		}
 		throw new IllegalArgumentException("Command '" + command + "' can not be executed");
 	}

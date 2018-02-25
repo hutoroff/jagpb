@@ -120,6 +120,9 @@ public class PollingBot extends TelegramLongPollingBot {
             case COMMAND_HELP:
                 printHelpForCommand(message.getChatId(), (CommandHelpCommand)command);
                 return;
+            case HELP:
+                doSimpleReply(message.getChatId(), "To create new poll use command /create");
+                return;
             default:
                 doSimpleReply(message.getChatId(), "No activity prepared for this command yet");
         }

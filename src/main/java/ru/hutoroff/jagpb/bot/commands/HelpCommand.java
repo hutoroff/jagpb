@@ -3,15 +3,15 @@ package ru.hutoroff.jagpb.bot.commands;
 import org.apache.commons.cli.CommandLine;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
-public class StartCommand extends Command {
+public class HelpCommand extends Command {
 
-	public StartCommand() throws UnknownOptionsException {
-		super(CommandType.START, null);
+	public HelpCommand() throws UnknownOptionsException {
+		super(CommandType.HELP, null);
 	}
 
 	@Override
 	public String getHelp() {
-		return Help.START_COMMAND;
+		return Help.HELP;
 	}
 
 	@Override
