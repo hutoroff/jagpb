@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
@@ -70,6 +71,7 @@ public class PollingBot extends TelegramLongPollingBot {
                     .setChatId(update.getCallbackQuery().getMessage().getChatId())
                     .setMessageId(update.getCallbackQuery().getMessage().getMessageId())
                     .setText(PollInfoBuilder.prepareText(poll));
+            editMessageText.setParseMode(ParseMode.MARKDOWN);
             editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
             try {
                 execute(editMessageText);
@@ -110,6 +112,7 @@ public class PollingBot extends TelegramLongPollingBot {
                 final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
                 PollDO poll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId);
                 SendMessage sendMessage = PollInfoBuilder.buildPollMessage(poll, message.getChatId());
+                sendMessage.setParseMode(ParseMode.MARKDOWN);
 
                 sendReply(sendMessage);
                 return;
