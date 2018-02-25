@@ -123,7 +123,7 @@ public class PollingBot extends TelegramLongPollingBot {
                 return;
             case LAST_POLL_RESULT:
                 String chatIdCmd = command.getArguments().getOptionValue('c');
-                Long chatIdActual = StringUtils.isNumeric(chatIdCmd.replaceAll("-", "")) ? Long.valueOf(chatIdCmd) : chatId;
+                Long chatIdActual = (chatIdCmd != null && StringUtils.isNumeric(chatIdCmd.replaceAll("-", ""))) ? Long.valueOf(chatIdCmd) : chatId;
                 PollDO pollToReport = pollService.getLastPollForUserInChat(message.getFrom().getId(), chatIdActual);
                 if (pollToReport != null) {
                     doSimpleReply(chatId, PollInfoBuilder.preparePollingReport(pollToReport));
