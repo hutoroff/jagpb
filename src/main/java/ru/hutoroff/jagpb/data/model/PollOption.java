@@ -21,12 +21,12 @@ public class PollOption implements PollDocument {
     private Set<Voter> voters;
 
     public PollOption() {
-        this.id = RandomStringUtils.random(8);
+        this.id = RandomStringUtils.randomNumeric(8);
         this.voters = new HashSet<>();
     }
 
     public PollOption(String title) {
-        this.id = RandomStringUtils.random(8);
+        this.id = RandomStringUtils.randomNumeric(8);
         this.title = title;
     }
 

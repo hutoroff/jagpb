@@ -72,7 +72,7 @@ public class PollingBot extends TelegramLongPollingBot {
                     .setChatId(update.getCallbackQuery().getMessage().getChatId())
                     .setMessageId(update.getCallbackQuery().getMessage().getMessageId())
                     .setText(PollInfoBuilder.prepareText(poll));
-            editMessageText.setParseMode(ParseMode.MARKDOWN);
+            editMessageText.setParseMode(ParseMode.HTML);
             editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
             try {
                 execute(editMessageText);
@@ -114,7 +114,7 @@ public class PollingBot extends TelegramLongPollingBot {
                 final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
                 PollDO createdPoll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId, chatId);
                 SendMessage sendMessage = PollInfoBuilder.buildPollMessage(createdPoll, chatId);
-                sendMessage.setParseMode(ParseMode.MARKDOWN);
+                sendMessage.setParseMode(ParseMode.HTML);
 
                 sendReply(sendMessage);
                 return;
@@ -163,7 +163,7 @@ public class PollingBot extends TelegramLongPollingBot {
 
     private void doSimpleReply(Long chatId, String replyText) {
         SendMessage reply = new SendMessage(chatId, replyText);
-        reply.setParseMode(ParseMode.MARKDOWN);
+        reply.setParseMode(ParseMode.HTML);
         this.sendReply(reply);
     }
 

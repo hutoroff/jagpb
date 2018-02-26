@@ -19,13 +19,13 @@ public class PollInfoBuilder {
 	private static final String MALE_SHRUG = EmojiManager.getForAlias("male_shrug").getUnicode();
 
 	private static final String HEADER_FORMAT = EmojiManager.getForAlias("bar_chart").getUnicode() + " %s\n";
-	private static final String OPTION_FORMAT = "\n*%s* - _%d_";
+	private static final String OPTION_FORMAT = "\n<b>%s</b> - <i>%d</i>";
 	private static final String VOTER_FORMAT = "\n\t" + BOX_UP_AND_RIGHT + EmojiManager.getForAlias("bust_in_silhouette").getUnicode() +  " %s%s";
 	private static final String VOTED_N_TOTAL_FORMAT = "\n" + EmojiManager.getForAlias("clipboard").getUnicode() + " %d voted";
 	private static final String VOTED_EMPTY_TOTAL_FORMAT = "\n" + EmojiManager.getForAlias("clipboard").getUnicode() + " nobody voted";
 
-	private static final String REPORT_VOTED_TITLE_FORMAT = "Poll *%s*:\n";
-	private static final String REPORT_VOTED_OPTION_FORMAT = "\n*%s* voted (%d): %s";
+	private static final String REPORT_VOTED_TITLE_FORMAT = "Poll <b>%s</b>:\n";
+	private static final String REPORT_VOTED_OPTION_FORMAT = "\n<b>%s</b> voted (%d): %s";
 	private static final String REPORT_VOTED_TOTAL_FORMAT = "\n\nTotal voted: %d";
 
 	public static SendMessage buildPollMessage(PollDO poll, Long chatId) {
