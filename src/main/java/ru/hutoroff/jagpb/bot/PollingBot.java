@@ -133,6 +133,9 @@ public class PollingBot extends TelegramLongPollingBot {
                 } else {
                     doSimpleReply(chatId, "No polls from current user in chat");
                 }
+                if (command.getArguments().hasOption("r")) {
+                    deleteMessage(message);
+                }
                 return;
             case START:
                 doSimpleReply(chatId, "Welcome to " + configuration.getName() + "!");
