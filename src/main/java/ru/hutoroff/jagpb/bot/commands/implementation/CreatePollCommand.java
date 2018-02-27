@@ -37,6 +37,13 @@ public class CreatePollCommand extends Command {
                 .required()
                 .build()
         );
+        options.addOption(Option.builder("r")
+                .longOpt("removeCommand")
+                .hasArg(false)
+                .desc("after execution command will be deleted form chat")
+                .required(false)
+                .build()
+        );
 
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);

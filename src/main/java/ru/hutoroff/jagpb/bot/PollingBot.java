@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
@@ -115,6 +116,10 @@ public class PollingBot extends TelegramLongPollingBot {
                 sendMessage.setParseMode(ParseMode.HTML);
 
                 sendReply(sendMessage);
+
+                if (command.getArguments().hasOption("r")) {
+                    deleteMessage(message);
+                }
                 return;
             case HELP:
                 doSimpleReply(chatId, "To create new poll use command /create");
@@ -170,6 +175,25 @@ public class PollingBot extends TelegramLongPollingBot {
             execute(msg);
         } catch (TelegramApiException e) {
             LOG.error("Error on sending reply:", e);
+        }
+    }
+
+    private boolean deleteMessage(Message msg) {
+        if (msg.getChat().isUserChat()) {
+            LOG.debug("Not allowed to delete message from user chat");
+            return false;
+        }
+
+        final long chatId = msg.getChatId();
+        final int authorId = msg.getFrom().getId();
+        DeleteMessage deleteMessage = new DeleteMessage(chatId, msg.getMessageId());
+
+        try {
+            return execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Can not delete message {} from chat {}. Caused by: ", msg.getMessageId(), chatId, e);
+            doSimpleReply((long) authorId, "Can not delete message: not enough authorities in chat '" + msg.getChat().getTitle() + "'");
+            return false;
         }
     }
 }
