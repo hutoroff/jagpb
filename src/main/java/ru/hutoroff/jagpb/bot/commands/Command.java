@@ -19,6 +19,10 @@ public abstract class Command {
         String[] split = rawCommand.split(" ");
         this.type = initType(split);
 
+        if (type == null) {
+            throw new UnknownCommandException("Command is not registered: " + rawCommand);
+        }
+
         if (split.length > 1) {
             this.arguments = initArguments(split);
         } else {
