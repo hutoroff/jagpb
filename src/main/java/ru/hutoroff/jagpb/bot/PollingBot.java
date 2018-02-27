@@ -17,7 +17,6 @@ import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
 import ru.hutoroff.jagpb.bot.commands.implementation.CommandHelpCommand;
-import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
 import ru.hutoroff.jagpb.business.PollService;
@@ -54,8 +53,6 @@ public class PollingBot extends TelegramLongPollingBot {
 
             if (messageText.startsWith("/")) {
                 processCommand(update.getMessage());
-            } else {
-                doSimpleReply(update.getMessage().getChatId(), "Only commands can be processed");
             }
         } else if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
@@ -87,13 +84,14 @@ public class PollingBot extends TelegramLongPollingBot {
         Command command;
         try {
             command = commandBuilder.buildCommand(messageText);
-        } catch (UnknownCommandException e) {
-            LOG.warn("Unknown command: ", e);
-            doSimpleReply(message.getChatId(), "Command is not supported");
-            return;
         } catch (UnknownOptionsException e) {
             LOG.warn("Wrong arguments: ", e);
             doSimpleReply(message.getChatId(), e.getMessage());
+            return;
+        }
+
+        if (command == null) {
+            LOG.debug("Unknown command: ", messageText);
             return;
         }
 

@@ -1,7 +1,5 @@
 package ru.hutoroff.jagpb.bot.commands;
 
-import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
-
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -18,12 +16,9 @@ public enum CommandType {
         this.commandText = commandText;
     }
 
-    public static CommandType getByCommand(String cmd) throws UnknownCommandException {
+    public static CommandType getByCommand(String cmd) {
         Optional<CommandType> first = Arrays.stream(values()).filter(el -> cmd.startsWith(el.commandText)).findFirst();
-        if (first.isPresent()) {
-            return first.get();
-        }
-        throw new UnknownCommandException("Command '" + cmd + "' is not registered");
+        return first.orElse(null);
     }
 
     public String getCommandText() {
