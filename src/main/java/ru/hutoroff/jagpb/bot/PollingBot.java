@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.DeleteMessage;
@@ -72,11 +73,25 @@ public class PollingBot extends TelegramLongPollingBot {
                     .setText(PollInfoBuilder.prepareText(poll));
             editMessageText.setParseMode(ParseMode.HTML);
             editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
+
+            AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+            answerCallbackQuery.setCallbackQueryId(update.getCallbackQuery().getId());
             try {
                 execute(editMessageText);
+                answerCallbackQuery.setText("You vote accepted");
             } catch (TelegramApiException e) {
                 LOG.error("Error on update message with poll result: ", e);
+                answerCallbackQuery.setText("Error while processing your vote!");
             }
+            doProcessAnswerCallback(answerCallbackQuery);
+        }
+    }
+
+    private void doProcessAnswerCallback(AnswerCallbackQuery answerCallbackQuery) {
+        try {
+            execute(answerCallbackQuery);
+        } catch (TelegramApiException e) {
+            LOG.warn("Error on answering on callback query: ", e);
         }
     }
 
