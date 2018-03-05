@@ -42,16 +42,23 @@ public class PollService {
 
         final Voter voter = prepareVoter(user);
         boolean wasVoted = false;
+        boolean revote = false;
         for (PollOption pollOption : poll.getOptions()) {
-            if (pollOption.getId().equals(optionId) && !pollOption.getVoters().contains(voter)) {
+            boolean lookingForThis = pollOption.getId().equals(optionId);
+            boolean voted = pollOption.getVoters().contains(voter);
+            if (lookingForThis && !voted) {
                 pollOption.getVoters().add(voter);
                 wasVoted = true;
-            } else {
+            } else if (!lookingForThis) {
                 pollOption.getVoters().removeIf(el -> el.getId().equals(voter.getId()));
+            } else {
+                revote = true;
             }
         }
 
-        if (!wasVoted) {
+        if (revote) {
+            return false;
+        } else if (!wasVoted) {
             LOG.warn("Option (id: {}) to vote for was not found in poll with _id: {}", optionId, pollId.toString());
             return false;
         }

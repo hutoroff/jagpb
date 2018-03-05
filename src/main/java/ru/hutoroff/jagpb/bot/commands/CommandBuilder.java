@@ -2,7 +2,6 @@ package ru.hutoroff.jagpb.bot.commands;
 
 import org.springframework.stereotype.Service;
 import ru.hutoroff.jagpb.bot.commands.implementation.*;
-import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
 import java.util.ArrayList;
@@ -15,9 +14,13 @@ import java.util.regex.Pattern;
 public class CommandBuilder {
 	private static final Pattern pattern = Pattern.compile(" -[a-z]");
 
-	public Command buildCommand(String command) throws UnknownCommandException, UnknownOptionsException {
+	public Command buildCommand(String command) throws UnknownOptionsException {
 		String[] split = splitCommand(command);
 		CommandType commandType = CommandType.getByCommand(split[0]);
+
+		if (commandType == null) {
+			return null;
+		}
 
 		switch (commandType) {
 			case COMMAND_HELP:

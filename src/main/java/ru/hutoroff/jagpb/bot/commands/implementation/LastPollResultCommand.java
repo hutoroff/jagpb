@@ -13,7 +13,7 @@ public class LastPollResultCommand extends Command {
 	private static final Options options = new Options();
 	private static final CommandLineParser cliParser = new DefaultParser();
 	private static final String HELP;
-	private static final String COMMAND_SYNTAX = "/lastpollresult [-c CHAT_ID]";
+	private static final String COMMAND_SYNTAX = Help.LAST_POLL;
 
 	static {
 		options.addOption(Option.builder("c")
@@ -23,6 +23,14 @@ public class LastPollResultCommand extends Command {
 				.argName("CHAT_ID")
 				.desc("id of chat to get last poll for")
 				.numberOfArgs(1)
+				.required(false)
+				.build()
+		);
+
+		options.addOption(Option.builder("r")
+				.longOpt("removeCommand")
+				.hasArg(false)
+				.desc("after execution command will be deleted form chat")
 				.required(false)
 				.build()
 		);

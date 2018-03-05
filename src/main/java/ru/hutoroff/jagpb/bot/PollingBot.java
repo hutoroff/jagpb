@@ -6,9 +6,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -17,7 +20,6 @@ import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
 import ru.hutoroff.jagpb.bot.commands.implementation.CommandHelpCommand;
-import ru.hutoroff.jagpb.bot.exceptions.UnknownCommandException;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
 import ru.hutoroff.jagpb.business.PollService;
@@ -54,8 +56,6 @@ public class PollingBot extends TelegramLongPollingBot {
 
             if (messageText.startsWith("/")) {
                 processCommand(update.getMessage());
-            } else {
-                doSimpleReply(update.getMessage().getChatId(), "Only commands can be processed");
             }
         } else if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
@@ -65,20 +65,46 @@ public class PollingBot extends TelegramLongPollingBot {
                 return;
             }
             ObjectId pollId = new ObjectId(String.valueOf(split[1]));
-            pollService.vote(pollId, split[2], update.getCallbackQuery().getFrom());
+            boolean voteResult = pollService.vote(pollId, split[2], update.getCallbackQuery().getFrom());
 
-            PollDO poll = pollService.getPoll(pollId);
-            EditMessageText editMessageText = new EditMessageText()
-                    .setChatId(update.getCallbackQuery().getMessage().getChatId())
-                    .setMessageId(update.getCallbackQuery().getMessage().getMessageId())
-                    .setText(PollInfoBuilder.prepareText(poll));
-            editMessageText.setParseMode(ParseMode.HTML);
-            editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
-            try {
-                execute(editMessageText);
-            } catch (TelegramApiException e) {
-                LOG.error("Error on update message with poll result: ", e);
+            if (voteResult) {
+                updateMessage(pollId, update.getCallbackQuery());
+            } else {
+                AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+                answerCallbackQuery.setCallbackQueryId(update.getCallbackQuery().getId());
+                answerCallbackQuery.setText("You've already voted for this option");
+                doProcessAnswerCallback(answerCallbackQuery);
             }
+        }
+    }
+
+    private void updateMessage(ObjectId pollId, CallbackQuery callbackQuery) {
+        PollDO poll = pollService.getPoll(pollId);
+        EditMessageText editMessageText = new EditMessageText()
+                .setChatId(callbackQuery.getMessage().getChatId())
+                .setMessageId(callbackQuery.getMessage().getMessageId())
+                .setText(PollInfoBuilder.prepareText(poll));
+        editMessageText.setParseMode(ParseMode.HTML);
+        editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
+
+        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+        answerCallbackQuery.setCallbackQueryId(callbackQuery.getId());
+        try {
+            execute(editMessageText);
+            answerCallbackQuery.setText("You vote accepted");
+        } catch (TelegramApiException e) {
+            LOG.error("Error on update message with poll result: ", e);
+            LOG.error("Caused by: ", e.getCause().toString());
+            answerCallbackQuery.setText("Error while processing your vote!");
+        }
+        doProcessAnswerCallback(answerCallbackQuery);
+    }
+
+    private void doProcessAnswerCallback(AnswerCallbackQuery answerCallbackQuery) {
+        try {
+            execute(answerCallbackQuery);
+        } catch (TelegramApiException e) {
+            LOG.warn("Error on answering on callback query: ", e);
         }
     }
 
@@ -87,13 +113,14 @@ public class PollingBot extends TelegramLongPollingBot {
         Command command;
         try {
             command = commandBuilder.buildCommand(messageText);
-        } catch (UnknownCommandException e) {
-            LOG.warn("Unknown command: ", e);
-            doSimpleReply(message.getChatId(), "Command is not supported");
-            return;
         } catch (UnknownOptionsException e) {
             LOG.warn("Wrong arguments: ", e);
             doSimpleReply(message.getChatId(), e.getMessage());
+            return;
+        }
+
+        if (command == null) {
+            LOG.debug("Unknown command: ", messageText);
             return;
         }
 
@@ -117,6 +144,10 @@ public class PollingBot extends TelegramLongPollingBot {
                 sendMessage.setParseMode(ParseMode.HTML);
 
                 sendReply(sendMessage);
+
+                if (command.getArguments().hasOption("r")) {
+                    deleteMessage(message);
+                }
                 return;
             case HELP:
                 doSimpleReply(chatId, "To create new poll use command /create");
@@ -129,6 +160,9 @@ public class PollingBot extends TelegramLongPollingBot {
                     doSimpleReply(chatId, PollInfoBuilder.preparePollingReport(pollToReport));
                 } else {
                     doSimpleReply(chatId, "No polls from current user in chat");
+                }
+                if (command.getArguments().hasOption("r")) {
+                    deleteMessage(message);
                 }
                 return;
             case START:
@@ -172,6 +206,25 @@ public class PollingBot extends TelegramLongPollingBot {
             execute(msg);
         } catch (TelegramApiException e) {
             LOG.error("Error on sending reply:", e);
+        }
+    }
+
+    private boolean deleteMessage(Message msg) {
+        if (msg.getChat().isUserChat()) {
+            LOG.debug("Not allowed to delete message from user chat");
+            return false;
+        }
+
+        final long chatId = msg.getChatId();
+        final int authorId = msg.getFrom().getId();
+        DeleteMessage deleteMessage = new DeleteMessage(chatId, msg.getMessageId());
+
+        try {
+            return execute(deleteMessage);
+        } catch (TelegramApiException e) {
+            LOG.error("Can not delete message {} from chat {}. Caused by: ", msg.getMessageId(), chatId, e);
+            doSimpleReply((long) authorId, "Can not delete message: not enough authorities in chat '" + msg.getChat().getTitle() + "'");
+            return false;
         }
     }
 }

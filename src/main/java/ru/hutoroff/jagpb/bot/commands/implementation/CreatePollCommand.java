@@ -3,6 +3,7 @@ package ru.hutoroff.jagpb.bot.commands.implementation;
 import org.apache.commons.cli.*;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandType;
+import ru.hutoroff.jagpb.bot.commands.Help;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 
 import java.io.PrintWriter;
@@ -11,7 +12,7 @@ import java.io.StringWriter;
 public class CreatePollCommand extends Command {
     public static final int REQUIRED_OPTIONS_NUMBER = 2;
     private static final CommandLineParser cliParser = new DefaultParser();
-    private static final String COMMAND_SYNTAX = "/create -t \"Poll Title\" -o {\"option1\",\"option2\",...,\"optionN\"}";
+    private static final String COMMAND_SYNTAX = Help.CREATE_POLL_COMMAND;
     private static final String HELP;
     private static final Options options = new Options();
 
@@ -35,6 +36,13 @@ public class CreatePollCommand extends Command {
                 .numberOfArgs(Option.UNLIMITED_VALUES)
                 .valueSeparator(',')
                 .required()
+                .build()
+        );
+        options.addOption(Option.builder("r")
+                .longOpt("removeCommand")
+                .hasArg(false)
+                .desc("after execution command will be deleted form chat")
+                .required(false)
                 .build()
         );
 
