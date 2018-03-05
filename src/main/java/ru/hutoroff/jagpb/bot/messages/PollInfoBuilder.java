@@ -1,6 +1,7 @@
 package ru.hutoroff.jagpb.bot.messages;
 
 import com.vdurmont.emoji.EmojiManager;
+import org.apache.commons.lang3.StringUtils;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -63,9 +64,10 @@ public class PollInfoBuilder {
 				sb.append(String.format(OPTION_FORMAT, pollOption.getTitle(), voters.size()));
 				for (Voter voter : voters) {
 					votedCount++;
-					String name = String.format("%s %s", voter.getFirstName(), voter.getLastName());
-					name = name.equals(" ") ? "" : " (" + name + ")";
-					sb.append(String.format(VOTER_FORMAT, voter.getUsername(), name));
+					String name = String.join(" ", StringUtils.defaultString(voter.getFirstName()), StringUtils.defaultString(voter.getLastName()));
+					name = StringUtils.isBlank(name) ? "" : " (" + name + ")";
+					String userName = StringUtils.isEmpty(voter.getUsername()) ? String.valueOf(voter.getId()) : voter.getUsername();
+					sb.append(String.format(VOTER_FORMAT, userName, name));
 				}
 			}
 		}
