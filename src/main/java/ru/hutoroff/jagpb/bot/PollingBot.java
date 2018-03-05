@@ -11,6 +11,7 @@ import org.telegram.telegrambots.api.methods.ParseMode;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -64,27 +65,39 @@ public class PollingBot extends TelegramLongPollingBot {
                 return;
             }
             ObjectId pollId = new ObjectId(String.valueOf(split[1]));
-            pollService.vote(pollId, split[2], update.getCallbackQuery().getFrom());
+            boolean voteResult = pollService.vote(pollId, split[2], update.getCallbackQuery().getFrom());
 
-            PollDO poll = pollService.getPoll(pollId);
-            EditMessageText editMessageText = new EditMessageText()
-                    .setChatId(update.getCallbackQuery().getMessage().getChatId())
-                    .setMessageId(update.getCallbackQuery().getMessage().getMessageId())
-                    .setText(PollInfoBuilder.prepareText(poll));
-            editMessageText.setParseMode(ParseMode.HTML);
-            editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
-
-            AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
-            answerCallbackQuery.setCallbackQueryId(update.getCallbackQuery().getId());
-            try {
-                execute(editMessageText);
-                answerCallbackQuery.setText("You vote accepted");
-            } catch (TelegramApiException e) {
-                LOG.error("Error on update message with poll result: ", e);
-                answerCallbackQuery.setText("Error while processing your vote!");
+            if (voteResult) {
+                updateMessage(pollId, update.getCallbackQuery());
+            } else {
+                AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+                answerCallbackQuery.setCallbackQueryId(update.getCallbackQuery().getId());
+                answerCallbackQuery.setText("You've already voted for this option");
+                doProcessAnswerCallback(answerCallbackQuery);
             }
-            doProcessAnswerCallback(answerCallbackQuery);
         }
+    }
+
+    private void updateMessage(ObjectId pollId, CallbackQuery callbackQuery) {
+        PollDO poll = pollService.getPoll(pollId);
+        EditMessageText editMessageText = new EditMessageText()
+                .setChatId(callbackQuery.getMessage().getChatId())
+                .setMessageId(callbackQuery.getMessage().getMessageId())
+                .setText(PollInfoBuilder.prepareText(poll));
+        editMessageText.setParseMode(ParseMode.HTML);
+        editMessageText.setReplyMarkup(PollInfoBuilder.prepareKeybaord(poll.getOptions(), pollId.toString()));
+
+        AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery();
+        answerCallbackQuery.setCallbackQueryId(callbackQuery.getId());
+        try {
+            execute(editMessageText);
+            answerCallbackQuery.setText("You vote accepted");
+        } catch (TelegramApiException e) {
+            LOG.error("Error on update message with poll result: ", e);
+            LOG.error("Caused by: ", e.getCause().toString());
+            answerCallbackQuery.setText("Error while processing your vote!");
+        }
+        doProcessAnswerCallback(answerCallbackQuery);
     }
 
     private void doProcessAnswerCallback(AnswerCallbackQuery answerCallbackQuery) {
