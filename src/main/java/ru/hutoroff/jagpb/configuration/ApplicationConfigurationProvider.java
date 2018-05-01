@@ -2,6 +2,7 @@ package ru.hutoroff.jagpb.configuration;
 
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.Yaml;
+import ru.hutoroff.jagpb.bot.PollingBotConfiguration;
 import ru.hutoroff.jagpb.data.mongo.MongoConfiguration;
 
 import java.io.File;
@@ -23,6 +24,10 @@ public class ApplicationConfigurationProvider {
 
     public MongoConfiguration getMongoConfiguration() {
         return configuration.getMongo();
+    }
+
+    public PollingBotConfiguration getBotConfiguration() {
+        return configuration.getTelegram();
     }
 
     private ApplicationConfiguration loadConfig() throws IOException, URISyntaxException {
