@@ -16,18 +16,16 @@ import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
-import org.yaml.snakeyaml.Yaml;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandBuilder;
 import ru.hutoroff.jagpb.bot.commands.implementation.CommandHelpCommand;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
 import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
 import ru.hutoroff.jagpb.business.PollService;
+import ru.hutoroff.jagpb.configuration.ApplicationContextConfiguration;
 import ru.hutoroff.jagpb.data.model.PollDO;
 import ru.hutoroff.jagpb.data.model.PollOption;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,17 +33,16 @@ import java.util.stream.Collectors;
 @Component("pollingBot")
 public class PollingBot extends TelegramLongPollingBot {
     private static final Logger LOG = LoggerFactory.getLogger(PollingBot.class);
-    private static final String CONFIG_FILE_NAME = "pollingBotConfig.private.yml";
 
     private final PollService pollService;
     private final CommandBuilder commandBuilder;
-    private PollingBotConfig configuration;
+    private final PollingBotConfiguration botConfiguration;
 
     @Autowired
-    public PollingBot(CommandBuilder commandBuilder, PollService pollService) throws IOException {
-        this.configuration = loadConfig();
+    public PollingBot(CommandBuilder commandBuilder, PollService pollService, ApplicationContextConfiguration applicationContextConfiguration) {
         this.commandBuilder = commandBuilder;
         this.pollService = pollService;
+        this.botConfiguration = applicationContextConfiguration.botConfiguration();
     }
 
     @Override
@@ -166,7 +163,7 @@ public class PollingBot extends TelegramLongPollingBot {
                 }
                 return;
             case START:
-                doSimpleReply(chatId, "Welcome to " + configuration.getName() + "!");
+                doSimpleReply(chatId, "Welcome to " + botConfiguration.getName() + "!");
                 return;
             default:
                 doSimpleReply(chatId, "No activity prepared for this command yet");
@@ -180,19 +177,12 @@ public class PollingBot extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return configuration.getName();
+        return botConfiguration.getName();
     }
 
     @Override
     public String getBotToken() {
-        return configuration.getToken();
-    }
-
-    private PollingBotConfig loadConfig() throws IOException {
-        Yaml yaml = new Yaml();
-        try (InputStream is = ClassLoader.getSystemResourceAsStream(CONFIG_FILE_NAME)) {
-            return yaml.loadAs(is, PollingBotConfig.class);
-        }
+        return botConfiguration.getToken();
     }
 
     private void doSimpleReply(Long chatId, String replyText) {

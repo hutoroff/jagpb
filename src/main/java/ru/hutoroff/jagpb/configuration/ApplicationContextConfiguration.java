@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import ru.hutoroff.jagpb.bot.PollingBotConfiguration;
 import ru.hutoroff.jagpb.data.mongo.MongoConfiguration;
 import ru.hutoroff.jagpb.data.mongo.MongoContextConfiguration;
 
@@ -23,5 +24,10 @@ public class ApplicationContextConfiguration {
     @Bean
     public MongoConfiguration mongoConfiguration() {
         return configurationProvider.getMongoConfiguration();
+    }
+
+    @Bean
+    public PollingBotConfiguration botConfiguration() {
+        return configurationProvider.getBotConfiguration();
     }
 }

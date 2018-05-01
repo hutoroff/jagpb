@@ -1,6 +1,6 @@
 package ru.hutoroff.jagpb.bot;
 
-public class PollingBotConfig {
+public class PollingBotConfiguration {
     private String name;
     private String token;
 

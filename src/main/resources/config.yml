@@ -1,6 +1,7 @@
 ###
 # This file is example of configuration that must be placed near the built jar
 ###
+#MongoDB connection settings
 mongo:
   host: 192.168.1.3
   port: 27017
@@ -9,3 +10,7 @@ mongo:
     user: jagpb
     password: jagpb123
     authBase: admin
+#Telegram Bot-API settings
+telegram:
+  token: your_bot_token
+  name: your_bot_name
