@@ -1,13 +1,26 @@
 package ru.hutoroff.jagpb.bot.commands.implementation;
 
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
+import org.telegram.telegrambots.api.methods.BotApiMethod;
+import org.telegram.telegrambots.api.methods.ParseMode;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.api.objects.Message;
 import ru.hutoroff.jagpb.bot.commands.Command;
-import ru.hutoroff.jagpb.bot.commands.CommandType;
 import ru.hutoroff.jagpb.bot.commands.Help;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
+import ru.hutoroff.jagpb.bot.messages.PollInfoBuilder;
+import ru.hutoroff.jagpb.business.PollService;
+import ru.hutoroff.jagpb.data.model.PollDO;
+import ru.hutoroff.jagpb.data.model.PollOption;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CreatePollCommand extends Command {
     public static final int REQUIRED_OPTIONS_NUMBER = 2;
@@ -53,13 +66,36 @@ public class CreatePollCommand extends Command {
         HELP = sw.toString();
     }
 
-    public CreatePollCommand(String[] arguments) throws UnknownOptionsException {
-        super(CommandType.CREATE_POLL, arguments);
+    private final Message message;
+
+    public CreatePollCommand(String[] arguments, Message message, PollService pollService) throws UnknownOptionsException {
+        super(arguments, pollService);
+        this.message = message;
     }
 
     @Override
-    public String getHelp() {
-        return HELP;
+    public List<BotApiMethod> execute() {
+        final String pollTitle = String.join(" ", arguments.getOptionValues("t"));
+        final String[] options = arguments.getOptionValues("o");
+        final List<PollOption> pollOptions = Arrays.stream(options).map(el -> new PollOption(StringUtils.strip(el, "\""))).collect(Collectors.toList());
+        final Long chatId = message.getChatId();
+        final Integer authorId = message.getFrom().getId();
+
+        PollDO createdPoll = pollService.createAndGetBackPoll(pollTitle, pollOptions, authorId, chatId);
+        SendMessage sendMessage = PollInfoBuilder.buildPollMessage(createdPoll, chatId);
+        sendMessage.setParseMode(ParseMode.HTML);
+
+        List<BotApiMethod> result = new ArrayList<>();
+        result.add(sendMessage);
+
+        if (arguments.hasOption("r")) {
+            DeleteMessage deleteMessage = prepareDeleteMessage(message);
+            if (deleteMessage != null) {
+                result.add(deleteMessage);
+            }
+        }
+
+        return result;
     }
 
     @Override

@@ -20,8 +20,4 @@ public enum CommandType {
         Optional<CommandType> first = Arrays.stream(values()).filter(el -> cmd.startsWith(el.commandText)).findFirst();
         return first.orElse(null);
     }
-
-    public String getCommandText() {
-        return commandText;
-    }
 }

@@ -1,8 +1,12 @@
 package ru.hutoroff.jagpb.bot.commands;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.api.objects.Message;
+import ru.hutoroff.jagpb.bot.PollingBotConfiguration;
 import ru.hutoroff.jagpb.bot.commands.implementation.*;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
+import ru.hutoroff.jagpb.business.PollService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,8 +18,20 @@ import java.util.regex.Pattern;
 public class CommandBuilder {
 	private static final Pattern pattern = Pattern.compile(" -[a-z]");
 
-	public Command buildCommand(String command) throws UnknownOptionsException {
-		String[] split = splitCommand(command);
+	private final PollService pollService;
+	private final PollingBotConfiguration botConfiguration;
+
+	@Autowired
+	public CommandBuilder(PollService pollService, PollingBotConfiguration botConfiguration) {
+		this.pollService = pollService;
+		this.botConfiguration = botConfiguration;
+	}
+
+	public Command buildCommand(Message message) throws UnknownOptionsException {
+		final String messageText = message.getText();
+		final Long chatId = message.getChatId();
+
+		String[] split = splitCommand(messageText);
 		CommandType commandType = CommandType.getByCommand(split[0]);
 
 		if (commandType == null) {
@@ -25,26 +41,26 @@ public class CommandBuilder {
 		switch (commandType) {
 			case COMMAND_HELP:
 				if (split.length == 1) {
-					return new CommandHelpCommand(split[0]);
+					return new CommandHelpCommand(split[0], chatId, pollService);
 				}
-				return new CommandHelpCommand(split[1]);
+				return new CommandHelpCommand(split[1], chatId, pollService);
 			case CREATE_POLL:
 				if (CreatePollCommand.REQUIRED_OPTIONS_NUMBER > (split.length -1)) {
-					return new CommandHelpCommand(split[0]);
+					return new CommandHelpCommand(split[0], chatId, pollService);
 				}
-				return new CreatePollCommand(Arrays.copyOfRange(split, 1, split.length));
+				return new CreatePollCommand(Arrays.copyOfRange(split, 1, split.length), message, pollService);
 			case HELP:
-				return new HelpCommand();
+				return new HelpCommand(chatId, pollService);
 			case LAST_POLL_RESULT:
 				if (split.length == 1) {
-					return new LastPollResultCommand(null);
+					return new LastPollResultCommand(null, message, pollService);
 				} else {
-					return new LastPollResultCommand(Arrays.copyOfRange(split, 1, split.length));
+					return new LastPollResultCommand(Arrays.copyOfRange(split, 1, split.length), message, pollService);
 				}
 			case START:
-				return new StartCommand();
+				return new StartCommand(pollService, chatId, botConfiguration.getName());
 		}
-		throw new IllegalArgumentException("Command '" + command + "' can not be executed");
+		throw new IllegalArgumentException("Command '" + messageText + "' can not be executed");
 	}
 
 	private String[] splitCommand(String command) {

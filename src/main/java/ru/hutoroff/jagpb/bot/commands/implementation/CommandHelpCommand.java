@@ -1,19 +1,38 @@
 package ru.hutoroff.jagpb.bot.commands.implementation;
 
+import com.google.common.collect.Lists;
 import org.apache.commons.cli.CommandLine;
+import org.telegram.telegrambots.api.methods.BotApiMethod;
+import org.telegram.telegrambots.api.methods.send.SendMessage;
 import ru.hutoroff.jagpb.bot.commands.Command;
 import ru.hutoroff.jagpb.bot.commands.CommandType;
 import ru.hutoroff.jagpb.bot.commands.Help;
 import ru.hutoroff.jagpb.bot.exceptions.UnknownOptionsException;
+import ru.hutoroff.jagpb.business.PollService;
+
+import java.util.List;
 
 public class CommandHelpCommand extends Command {
 	private static final String MSG_PREFIX = "usage: ";
 
 	private final CommandType commandTypeToHelp;
+	private final Long chatId;
 
-	public CommandHelpCommand(String command) throws UnknownOptionsException {
-		super(CommandType.COMMAND_HELP, null);
+	public CommandHelpCommand(String command, Long chatId, PollService pollService) throws UnknownOptionsException {
+		super(null, pollService);
 		this.commandTypeToHelp = findCommandToHelp(command);
+		this.chatId = chatId;
+	}
+
+	@Override
+	public List<BotApiMethod> execute() {
+		SendMessage sendMessage = super.prepareSimpleReply(chatId, getRequestedHelp());
+		return Lists.newArrayList(sendMessage);
+	}
+
+	@Override
+	protected CommandLine initArguments(String[] split) {
+		return null;
 	}
 
 	private CommandType findCommandToHelp(String command) {
@@ -26,12 +45,7 @@ public class CommandHelpCommand extends Command {
 		return CommandType.getByCommand(resCommand);
 	}
 
-	@Override
-	protected CommandLine initArguments(String[] split) throws UnknownOptionsException {
-		return null;
-	}
-
-	public String getRequestedHelp() {
+	private String getRequestedHelp() {
 		if (commandTypeToHelp != null) {
 			switch (this.commandTypeToHelp) {
 				case COMMAND_HELP:
@@ -47,10 +61,5 @@ public class CommandHelpCommand extends Command {
 			}
 		}
 		return "Unknown command";
-	}
-
-	@Override
-	public String getHelp() {
-		return MSG_PREFIX + Help.COMMAND_HELP_COMMAND;
 	}
 }
